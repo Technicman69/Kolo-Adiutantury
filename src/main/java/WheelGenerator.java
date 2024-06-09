@@ -3,7 +3,6 @@ package main.java;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.awt.geom.Arc2D;
 import java.util.Arrays;
 
