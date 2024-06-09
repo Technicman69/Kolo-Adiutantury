@@ -1,15 +1,10 @@
 package main.java;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -17,6 +12,15 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 public class WheelOfFortune extends JPanel {
+
+    private static final double FPS = 50.0;
+    private static final int RADIUS = 350;
+    private static final double ANGULAR_VELOCITY = 50.0;
+
+    private static final double DELTA_TIME = 1/FPS;
+
+    private final BufferedImage master;
+    private BufferedImage rotated;
 
     public static void main(String[] args) {
         try {
@@ -33,24 +37,17 @@ public class WheelOfFortune extends JPanel {
         frame.setVisible(true);
     }
 
-    private final BufferedImage master;
-    private BufferedImage rotated;
-
     public WheelOfFortune() {
-        try {
-            master = ImageIO.read(new File("resources/pack.png"));
-            rotated = rotateImageByDegrees(master, 0.0);
-        } catch (IOException ex) {
-            throw new RuntimeException("Nastąpił błąd przy łądowaniu obrazka: ", ex);
-        }
+        master = WheelGenerator.generate(RADIUS);
+        rotated = rotateImageByDegrees(master, 0.0);
 
-        Timer timer = new Timer(40, new ActionListener() {
+        Timer timer = new Timer((int) (DELTA_TIME*1000), new ActionListener() {
             private double angle = 0;
-            private final double angularVelocity = 1.0;
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                angle += angularVelocity;
+
+                angle += ANGULAR_VELOCITY * DELTA_TIME;
                 rotated = rotateImageByDegrees(master, angle);
                 repaint();
             }
@@ -88,6 +85,7 @@ public class WheelOfFortune extends JPanel {
 
         BufferedImage rotated = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = rotated.createGraphics();
+        WheelGenerator.antialiasing(g2d);
         AffineTransform at = new AffineTransform();
         at.translate((double) (newWidth - w) / 2, (double) (newHeight - h) / 2);
 
