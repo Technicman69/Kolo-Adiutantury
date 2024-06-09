@@ -38,7 +38,12 @@ public class WheelOfFortune extends JPanel {
     }
 
     public WheelOfFortune() {
-        master = WheelGenerator.generate(RADIUS);
+        Student[] students = new Student[] {
+                new Student("Jan Uziembło", 1, Color.green),
+                new Student("Rafał Pyda", 2, Color.yellow),
+                new Student("Karol Pacwa", 1, Color.blue)
+        };
+        master = WheelGenerator.generate(RADIUS, students);
         rotated = rotateImageByDegrees(master, 0.0);
 
         Timer timer = new Timer((int) (DELTA_TIME*1000), new ActionListener() {
