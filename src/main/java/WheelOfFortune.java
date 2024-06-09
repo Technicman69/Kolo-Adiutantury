@@ -1,7 +1,6 @@
 package main.java;
 
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -23,7 +22,7 @@ public class WheelOfFortune extends JPanel {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            ex.printStackTrace();
+            throw new RuntimeException("Błąd przy wczytywaniu systemowych stylów: ", ex);
         }
 
         JFrame frame = new JFrame("Testing");
@@ -34,7 +33,7 @@ public class WheelOfFortune extends JPanel {
         frame.setVisible(true);
     }
 
-    private BufferedImage master;
+    private final BufferedImage master;
     private BufferedImage rotated;
 
     public WheelOfFortune() {
@@ -42,16 +41,16 @@ public class WheelOfFortune extends JPanel {
             master = ImageIO.read(new File("resources/pack.png"));
             rotated = rotateImageByDegrees(master, 0.0);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            throw new RuntimeException("Nastąpił błąd przy łądowaniu obrazka: ", ex);
         }
 
         Timer timer = new Timer(40, new ActionListener() {
             private double angle = 0;
-            private double delta = 1.0;
+            private final double angularVelocity = 1.0;
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                angle += delta;
+                angle += angularVelocity;
                 rotated = rotateImageByDegrees(master, angle);
                 repaint();
             }
@@ -90,7 +89,7 @@ public class WheelOfFortune extends JPanel {
         BufferedImage rotated = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = rotated.createGraphics();
         AffineTransform at = new AffineTransform();
-        at.translate((newWidth - w) / 2, (newHeight - h) / 2);
+        at.translate((double) (newWidth - w) / 2, (double) (newHeight - h) / 2);
 
         int x = w / 2;
         int y = h / 2;
