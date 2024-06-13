@@ -13,11 +13,9 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 public class WheelOfFortune extends JPanel {
 
-    private static final double FPS = 50.0;
+    private static final double MAX_FPS = 120.0;
     private static final int RADIUS = 350;
     private static final double ANGULAR_VELOCITY = 50.0;
-
-    private static final double DELTA_TIME = 1/FPS;
 
     private final BufferedImage master;
     private BufferedImage rotated;
@@ -46,13 +44,20 @@ public class WheelOfFortune extends JPanel {
         master = WheelGenerator.generate(RADIUS, students);
         rotated = rotateImageByDegrees(master, 0.0);
 
-        Timer timer = new Timer((int) (DELTA_TIME*1000), new ActionListener() {
+        Timer timer = new Timer((int) (1/MAX_FPS*1000), new ActionListener() {
+
+            private long timestamp = System.nanoTime();
             private double angle = 0;
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Calculate elapsed time
+                long newTimestamp = System.nanoTime();
+                double deltaTime = (double) (newTimestamp - timestamp) / 1_000_000_000;
+                timestamp = newTimestamp;
 
-                angle += ANGULAR_VELOCITY * DELTA_TIME;
+                // Physics O_O
+                angle += ANGULAR_VELOCITY * deltaTime;
                 rotated = rotateImageByDegrees(master, angle);
                 repaint();
             }
