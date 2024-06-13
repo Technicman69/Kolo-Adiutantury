@@ -33,6 +33,10 @@ public class Utils {
 
     }
     public static void main(String[] args) {
-        Utils.wczytajPlik("aaa.txt");
+        ArrayList<Student> lista = Utils.wczytajPlik("aaa.txt");
+        for(Student student : lista)
+        {
+            System.out.println(student.fullName + "\n" + student.weight + "\n" +student.color);
+        }
     }
 }
