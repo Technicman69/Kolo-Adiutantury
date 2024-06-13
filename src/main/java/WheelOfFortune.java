@@ -19,9 +19,9 @@ public class WheelOfFortune extends JPanel {
 
     private static final int MIN_DELAY = 5;
     private static final int RADIUS = 350;
-    private static final double ANGULAR_TORQUE= 0.8;
+    private static final double ANGULAR_TORQUE= 0.6;
     private double angle = 0;
-    private final int rotations = 17;
+    private final int rotations = 12;
     private final double finalAngle;
     private final double finalAngleClamped;
     private double angularVelocity;
@@ -115,7 +115,8 @@ public class WheelOfFortune extends JPanel {
                 timestamp = Instant.now();
             }
             Duration runtime = Duration.between(timestamp, Instant.now());
-            timestamp = Instant.now();
+            double time = runtime.toMillis() * 0.001;
+            /*timestamp = Instant.now();
             double deltaTime = (double) runtime.toNanos() * 0.00_000_000_1;
             //System.out.println(deltaTime);
 
@@ -124,7 +125,9 @@ public class WheelOfFortune extends JPanel {
             if (angularVelocity < 0.0) {
                 angularVelocity = 0.0;
             }
-            angle += angularVelocity * deltaTime;
+            angle += angularVelocity * deltaTime;*/
+            double currentVelocity = angularVelocity - time * ANGULAR_TORQUE;
+            angle = currentVelocity > 0.0 ? time * (angularVelocity - time * ANGULAR_TORQUE * 0.5) : finalAngle;
             rotated = rotateImageByDegrees(master, angle);
             repaint();
         });
@@ -171,6 +174,8 @@ public class WheelOfFortune extends JPanel {
         g2d.setTransform(at);
         g2d.drawImage(img, 0, 0, this);
         g2d.dispose();
+
+        //System.out.printf("angle: %s, final_angle: %s\n", angle, finalAngle);
 
         return rotated;
     }
