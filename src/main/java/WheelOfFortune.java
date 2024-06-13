@@ -93,18 +93,21 @@ public class WheelOfFortune extends JPanel {
                 selectedFile = fileChooser.getSelectedFile();
                 System.out.println("Selected file: " + selectedFile.getAbsolutePath());
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                var panel = new JPanel();
+                panel.setLayout(new BorderLayout());
                 WheelOfFortune wf = new WheelOfFortune(selectedFile);
-                frame.add(wf);
+                frame.setLayout(new GridLayout(1, 2));
+                panel.add(wf);
+                frame.add(panel);
+
+                frame.add(new JTextArea("<---"));
+                JButton zakrecButton = new JButton("Zakręć kołem");
+                zakrecButton.addActionListener(e -> wf.ticker.start());
+                panel.add(zakrecButton, BorderLayout.SOUTH);
                 frame.pack();
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
-                JButton zakręćButton = new JButton("Zakręć kołem");
-                zakręćButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        wf.ticker.start();
-                    }
-                });
-                frame.add(zakręćButton, BorderLayout.SOUTH);
+
                 flag = false;
             } else System.exit(0);
         }
