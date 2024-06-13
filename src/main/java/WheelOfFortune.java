@@ -9,11 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Random;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.Timer;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 
 public class WheelOfFortune extends JPanel {
 
@@ -82,8 +78,13 @@ public class WheelOfFortune extends JPanel {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        JButton zakręćButton = new JButton("Zakręć kołem");
+        zakręćButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
 
-
+            }
+        });
+        frame.add(zakręćButton, BorderLayout.SOUTH);
     }
 
     public WheelOfFortune() {
