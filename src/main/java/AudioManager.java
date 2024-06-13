@@ -1,23 +1,30 @@
 package main.java;
 
-import com.sun.tools.javac.Main;
+import javax.print.attribute.standard.Media;
+import javax.sound.sampled.*;
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-
-public class AudioManager {
-    public static synchronized void playSound(final String url) {
-        // the wrapper thread is unnecessary, unless it blocks on the Clip finishing, see comments
-        new Thread(() -> {
-            try {
-                Clip clip = AudioSystem.getClip();
-                AudioInputStream inputStream = AudioSystem.getAudioInputStream(Main.class.getResourceAsStream("/path/to/sounds/" + url));
-                clip.open(inputStream);
-                clip.start();
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
-            }
-        }).start();
+public class AudioManager extends Component {
+    public void playSound(String fileName) {
+        try {
+            // Open an audio input stream.
+            File f = new File("resources/" + fileName).getAbsoluteFile();
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(f);
+            // Get a sound clip resource.
+            Clip clip = AudioSystem.getClip();
+            // Open audio clip and load samples from the audio input stream.
+            clip.open(audioIn);
+            clip.start();
+        } catch (UnsupportedAudioFileException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (LineUnavailableException e) {
+            e.printStackTrace();
+        }
     }
 }
