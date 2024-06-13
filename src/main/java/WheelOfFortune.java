@@ -22,7 +22,7 @@ public class WheelOfFortune extends JPanel {
     private final double finalAngleClamped;
     private double angularVelocity;
     private Student winner;
-
+    private Ticker ticker = new Ticker();
     private final BufferedImage master;
     private BufferedImage rotated;
 
@@ -74,14 +74,15 @@ public class WheelOfFortune extends JPanel {
 
         JFrame frame = new JFrame("Testing");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(new WheelOfFortune());
+        WheelOfFortune wf = new WheelOfFortune();
+        frame.add(wf);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         JButton zakręćButton = new JButton("Zakręć kołem");
         zakręćButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-
+                wf.ticker.start();
             }
         });
         frame.add(zakręćButton, BorderLayout.SOUTH);
@@ -110,7 +111,7 @@ public class WheelOfFortune extends JPanel {
         }
         System.out.println(winner.fullName);
 
-        Ticker ticker = new Ticker();
+        //Ticker ticker = new Ticker();
         ticker.setCallback(someTicker -> {
             if (timestamp == null) {
                 timestamp = Instant.now();
@@ -132,7 +133,7 @@ public class WheelOfFortune extends JPanel {
             rotated = rotateImageByDegrees(master, angle);
             repaint();
         });
-        ticker.start();
+        //ticker.start();
     }
 
     @Override
