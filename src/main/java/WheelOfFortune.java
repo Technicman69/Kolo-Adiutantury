@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -73,8 +74,21 @@ public class WheelOfFortune extends JPanel {
         }
 
         JFrame frame = new JFrame("Testing");
+        boolean flag = true;
+        File selectedFile = new File("resources/studenci.txt");
+        while (flag) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+            int result = fileChooser.showOpenDialog(frame);
+
+            if (result == JFileChooser.APPROVE_OPTION) {
+                selectedFile = fileChooser.getSelectedFile();
+                System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+                flag = false;
+            }
+        }
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        WheelOfFortune wf = new WheelOfFortune();
+        WheelOfFortune wf = new WheelOfFortune(selectedFile);
         frame.add(wf);
         frame.pack();
         frame.setLocationRelativeTo(null);
@@ -88,14 +102,14 @@ public class WheelOfFortune extends JPanel {
         frame.add(zakręćButton, BorderLayout.SOUTH);
     }
 
-    public WheelOfFortune() {
+    public WheelOfFortune(File file) {
         Random random = new Random();
         finalAngleClamped = random.nextDouble(2 * Math.PI);
         finalAngle = finalAngleClamped + 2*Math.PI*rotations;
 
         angularVelocity = Math.sqrt(2*ANGULAR_TORQUE*finalAngle);
 
-        ArrayList<Student> students = Utils.wczytajPlik("resources/studenci.txt");
+        ArrayList<Student> students = Utils.wczytajPlik(file);
         master = WheelGenerator.generate(RADIUS, students);
         rotated = rotateImageByDegrees(master, 0.0);
 
@@ -146,11 +160,14 @@ public class WheelOfFortune extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
         if (rotated != null) {
             Graphics2D g2d = (Graphics2D) g.create();
             int x = (getWidth() - rotated.getWidth()) / 2;
             int y = (getHeight() - rotated.getHeight()) / 2;
+
             g2d.drawImage(rotated, x, y, this);
+
             g2d.dispose();
         }
     }

@@ -6,12 +6,12 @@ import java.util.Scanner;
 import java.io.FileNotFoundException;
 
 public class Utils {
-    public static ArrayList<Student> wczytajPlik(String path)
+    public static ArrayList<Student> wczytajPlik(File file)
     {
         try {
             int i = 0;
             Color colors[] = {Color.GREEN, Color.YELLOW, Color.BLUE, Color.RED};
-            Scanner odczyt = new Scanner(new File(path));
+            Scanner odczyt = new Scanner(file);
             ArrayList<Student> Lista = new ArrayList<>();
             while(odczyt.hasNextLine()) {
                 String line = odczyt.nextLine();
@@ -33,10 +33,12 @@ public class Utils {
 
     }
     public static void main(String[] args) {
-        ArrayList<Student> lista = Utils.wczytajPlik("aaa.txt");
+        /*ArrayList<Student> lista = Utils.wczytajPlik();
         for(Student student : lista)
         {
             System.out.println(student.fullName + "\n" + student.weight + "\n" +student.color);
         }
+
+         */
     }
 }
