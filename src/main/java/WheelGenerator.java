@@ -20,12 +20,16 @@ public class WheelGenerator {
         g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
     }
 
+    public static double calculateTotalWeight (ArrayList<Student> students) {
+        return students.stream().mapToDouble(s -> s.weight).sum();
+    }
+
     public static BufferedImage generate(int radius, ArrayList<Student> students) {
 
         BufferedImage img = new BufferedImage(2*radius, 2*radius, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = img.createGraphics();
         antialiasing(g2d);
-        double totalWeight = students.stream().mapToDouble(s -> s.weight).sum();
+        double totalWeight = calculateTotalWeight(students);
         double totalAngle = 0.0;
         for (Student student : students){
             String text = student.fullName;

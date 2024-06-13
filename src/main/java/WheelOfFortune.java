@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -18,9 +19,13 @@ public class WheelOfFortune extends JPanel {
 
     private static final int MIN_DELAY = 5;
     private static final int RADIUS = 350;
-    private static final double ANGULAR_TORQUE= 15.0;
+    private static final double ANGULAR_TORQUE= 0.8;
     private double angle = 0;
-    private double angularVelocity = 300.0;
+    private final int rotations = 17;
+    private final double finalAngle;
+    private final double finalAngleClamped;
+    private double angularVelocity;
+    private Student winner;
 
     private final BufferedImage master;
     private BufferedImage rotated;
@@ -43,14 +48,11 @@ public class WheelOfFortune extends JPanel {
             if (timer != null) {
                 return;
             }
-            timer = new Timer(MIN_DELAY, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (callback == null) {
-                        return;
-                    }
-                    callback.didTick(Ticker.this);
+            timer = new Timer(MIN_DELAY, e -> {
+                if (callback == null) {
+                    return;
                 }
+                callback.didTick(Ticker.this);
             });
             timer.start();
         }
@@ -85,12 +87,30 @@ public class WheelOfFortune extends JPanel {
     }
 
     public WheelOfFortune() {
+        Random random = new Random();
+        finalAngleClamped = random.nextDouble(2 * Math.PI);
+        finalAngle = finalAngleClamped + 2*Math.PI*rotations;
+
+        angularVelocity = Math.sqrt(2*ANGULAR_TORQUE*finalAngle);
+
         ArrayList<Student> students = Utils.wczytajPlik("resources/studenci.txt");
         master = WheelGenerator.generate(RADIUS, students);
         rotated = rotateImageByDegrees(master, 0.0);
 
-        Ticker ticker1 = new Ticker();
-        ticker1.setCallback(ticker -> {
+        // Check who is the winner
+        double weightRange = finalAngleClamped/(2*Math.PI) * WheelGenerator.calculateTotalWeight(students);
+        double weightSum = 0.0;
+        for (Student student : students) {
+            weightSum +=student.weight;
+            if (weightSum > weightRange) {
+                winner = student;
+                break;
+            }
+        }
+        System.out.println(winner.fullName);
+
+        Ticker ticker = new Ticker();
+        ticker.setCallback(someTicker -> {
             if (timestamp == null) {
                 timestamp = Instant.now();
             }
@@ -108,7 +128,7 @@ public class WheelOfFortune extends JPanel {
             rotated = rotateImageByDegrees(master, angle);
             repaint();
         });
-        ticker1.start();
+        ticker.start();
     }
 
     @Override
@@ -132,8 +152,7 @@ public class WheelOfFortune extends JPanel {
 
     public BufferedImage rotateImageByDegrees(BufferedImage img, double angle) {
 
-        double rads = Math.toRadians(angle);
-        double sin = Math.abs(Math.sin(rads)), cos = Math.abs(Math.cos(rads));
+        double sin = Math.abs(Math.sin(angle)), cos = Math.abs(Math.cos(angle));
         int w = img.getWidth();
         int h = img.getHeight();
         int newWidth = (int) Math.floor(w * cos + h * sin);
@@ -148,7 +167,7 @@ public class WheelOfFortune extends JPanel {
         int x = w / 2;
         int y = h / 2;
 
-        at.rotate(rads, x, y);
+        at.rotate(angle, x, y);
         g2d.setTransform(at);
         g2d.drawImage(img, 0, 0, this);
         g2d.dispose();
