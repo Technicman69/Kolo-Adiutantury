@@ -15,7 +15,7 @@ public class WheelOfFortune extends JPanel {
 
     private static final double MAX_FPS = 120.0;
     private static final int RADIUS = 350;
-    private static final double ANGULAR_VELOCITY = 50.0;
+    private static final double ANGULAR_TORQUE= 50.0;
 
     private final BufferedImage master;
     private BufferedImage rotated;
@@ -48,6 +48,7 @@ public class WheelOfFortune extends JPanel {
 
             private long timestamp = System.nanoTime();
             private double angle = 0;
+            private double angularVelocity = 250.0;
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -57,7 +58,11 @@ public class WheelOfFortune extends JPanel {
                 timestamp = newTimestamp;
 
                 // Physics O_O
-                angle += ANGULAR_VELOCITY * deltaTime;
+                angularVelocity -= ANGULAR_TORQUE * deltaTime;
+                if (angularVelocity < 0.0) {
+                    angularVelocity = 0.0;
+                }
+                angle += angularVelocity * deltaTime;
                 rotated = rotateImageByDegrees(master, angle);
                 repaint();
             }
