@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.geom.Arc2D;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class WheelGenerator {
@@ -19,12 +20,12 @@ public class WheelGenerator {
         g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
     }
 
-    public static BufferedImage generate(int radius, Student[] students) {
+    public static BufferedImage generate(int radius, ArrayList<Student> students) {
 
         BufferedImage img = new BufferedImage(2*radius, 2*radius, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = img.createGraphics();
         antialiasing(g2d);
-        double totalWeight = Arrays.stream(students).mapToDouble(s -> s.weight).sum();
+        double totalWeight = students.stream().mapToDouble(s -> s.weight).sum();
         double totalAngle = 0.0;
         for (Student student : students){
             String text = student.fullName;

@@ -7,6 +7,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -24,17 +25,17 @@ public class WheelOfFortune extends JPanel {
     private final BufferedImage master;
     private BufferedImage rotated;
 
-    public class Ticker {
+    public static class Ticker {
 
-        public interface Callbck {
+        public interface Callback {
             public void didTick(Ticker ticker);
         }
 
         private Timer timer;
 
-        private Callbck callback;
+        private Callback callback;
 
-        public void setCallback(Callbck tick) {
+        public void setCallback(Callback tick) {
             this.callback = tick;
         }
 
@@ -64,9 +65,7 @@ public class WheelOfFortune extends JPanel {
 
     }
 
-    private Ticker ticker;
     private Instant timestamp;
-    private Duration duration = Duration.ofSeconds(5);
 
     public static void main(String[] args) {
         try {
@@ -86,16 +85,12 @@ public class WheelOfFortune extends JPanel {
     }
 
     public WheelOfFortune() {
-        Student[] students = new Student[] {
-                new Student("Jan Uziembło", 1, Color.green),
-                new Student("Rafał Pyda", 2, Color.yellow),
-                new Student("Karol Pacwa", 1, Color.blue)
-        };
+        ArrayList<Student> students = Utils.wczytajPlik("resources/studenci.txt");
         master = WheelGenerator.generate(RADIUS, students);
         rotated = rotateImageByDegrees(master, 0.0);
 
-        ticker = new Ticker();
-        ticker.setCallback(ticker -> {
+        Ticker ticker1 = new Ticker();
+        ticker1.setCallback(ticker -> {
             if (timestamp == null) {
                 timestamp = Instant.now();
             }
@@ -113,7 +108,7 @@ public class WheelOfFortune extends JPanel {
             rotated = rotateImageByDegrees(master, angle);
             repaint();
         });
-        ticker.start();
+        ticker1.start();
     }
 
     @Override

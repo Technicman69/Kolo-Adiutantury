@@ -12,7 +12,7 @@ public class Utils {
             int i = 0;
             Color colors[] = {Color.GREEN, Color.YELLOW, Color.BLUE, Color.RED};
             Scanner odczyt = new Scanner(new File(path));
-            ArrayList<Student> Lista = new ArrayList<Student>();
+            ArrayList<Student> Lista = new ArrayList<>();
             while(odczyt.hasNextLine()) {
                 String line = odczyt.nextLine();
                 String[] nazwy = line.split(" ");
