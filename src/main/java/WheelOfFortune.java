@@ -105,6 +105,7 @@ public class WheelOfFortune extends JPanel {
                     }
                 });
                 frame.add(zakręćButton, BorderLayout.SOUTH);
+                flag = false;
             } else System.exit(0);
         }
 
