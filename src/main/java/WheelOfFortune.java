@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.time.Duration;
+import java.time.Instant;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -13,12 +15,58 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 public class WheelOfFortune extends JPanel {
 
-    private static final double MAX_FPS = 120.0;
+    private static final int MIN_DELAY = 5;
     private static final int RADIUS = 350;
-    private static final double ANGULAR_TORQUE= 50.0;
+    private static final double ANGULAR_TORQUE= 15.0;
+    private double angle = 0;
+    private double angularVelocity = 300.0;
 
     private final BufferedImage master;
     private BufferedImage rotated;
+
+    public class Ticker {
+
+        public interface Callbck {
+            public void didTick(Ticker ticker);
+        }
+
+        private Timer timer;
+
+        private Callbck callback;
+
+        public void setCallback(Callbck tick) {
+            this.callback = tick;
+        }
+
+        public void start() {
+            if (timer != null) {
+                return;
+            }
+            timer = new Timer(MIN_DELAY, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (callback == null) {
+                        return;
+                    }
+                    callback.didTick(Ticker.this);
+                }
+            });
+            timer.start();
+        }
+
+        public void stop() {
+            if (timer == null) {
+                return;
+            }
+            timer.stop();
+            timer = null;
+        }
+
+    }
+
+    private Ticker ticker;
+    private Instant timestamp;
+    private Duration duration = Duration.ofSeconds(5);
 
     public static void main(String[] args) {
         try {
@@ -33,6 +81,8 @@ public class WheelOfFortune extends JPanel {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+
     }
 
     public WheelOfFortune() {
@@ -44,30 +94,26 @@ public class WheelOfFortune extends JPanel {
         master = WheelGenerator.generate(RADIUS, students);
         rotated = rotateImageByDegrees(master, 0.0);
 
-        Timer timer = new Timer((int) (1/MAX_FPS*1000), new ActionListener() {
-
-            private long timestamp = System.nanoTime();
-            private double angle = 0;
-            private double angularVelocity = 250.0;
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Calculate elapsed time
-                long newTimestamp = System.nanoTime();
-                double deltaTime = (double) (newTimestamp - timestamp) / 1_000_000_000;
-                timestamp = newTimestamp;
-
-                // Physics O_O
-                angularVelocity -= ANGULAR_TORQUE * deltaTime;
-                if (angularVelocity < 0.0) {
-                    angularVelocity = 0.0;
-                }
-                angle += angularVelocity * deltaTime;
-                rotated = rotateImageByDegrees(master, angle);
-                repaint();
+        ticker = new Ticker();
+        ticker.setCallback(ticker -> {
+            if (timestamp == null) {
+                timestamp = Instant.now();
             }
+            Duration runtime = Duration.between(timestamp, Instant.now());
+            timestamp = Instant.now();
+            double deltaTime = (double) runtime.toNanos() * 0.00_000_000_1;
+            //System.out.println(deltaTime);
+
+            // Physics O_O
+            angularVelocity -= ANGULAR_TORQUE * deltaTime;
+            if (angularVelocity < 0.0) {
+                angularVelocity = 0.0;
+            }
+            angle += angularVelocity * deltaTime;
+            rotated = rotateImageByDegrees(master, angle);
+            repaint();
         });
-        timer.start();
+        ticker.start();
     }
 
     @Override
