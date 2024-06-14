@@ -21,11 +21,11 @@ public class WheelOfFortune extends JPanel {
     private static final double ANGULAR_TORQUE= 0.3;
     private double angle = 0;
     private final int rotations = 7;
-    private final double finalAngle;
-    private final double finalAngleClamped;
+    private double finalAngle;
+    private double finalAngleClamped;
     private double angularVelocity;
     private Student winner;
-    private Ticker ticker = new Ticker();
+    private Ticker ticker;
     private final BufferedImage master;
     private BufferedImage rotated;
 
@@ -104,7 +104,53 @@ public class WheelOfFortune extends JPanel {
 
                 frame.add(new JTextArea("<---"));
                 JButton zakrecButton = new JButton("Zakręć kołem");
-                zakrecButton.addActionListener(e -> wf.ticker.start());
+                zakrecButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        Random random = new Random();
+                        wf.finalAngleClamped = random.nextDouble(2 * Math.PI);
+                        wf.finalAngle = wf.finalAngleClamped + 2*Math.PI*wf.rotations;
+
+                        wf.angularVelocity = Math.sqrt(2*ANGULAR_TORQUE*wf.finalAngle);
+                        wf.ticker = new Ticker();
+                        // Check who is the winner
+                        double weightRange = wf.finalAngleClamped/(2*Math.PI) * wf.totalStudentWeight;
+                        double weightSum = 0.0;
+                        for (Student student : wf.students) {
+                            weightSum +=student.weight;
+                            if (weightSum > weightRange) {
+                                wf.winner = student;
+                                break;
+                            }
+                        }
+                        //System.out.println(wf.winner.fullName);
+
+                        //Ticker ticker = new Ticker();
+                        wf.ticker.setCallback(someTicker -> {
+                            if (wf.timestamp == null) {
+                                wf.timestamp = Instant.now();
+                            }
+                            Duration runtime = Duration.between(wf.timestamp, Instant.now());
+                            double time = runtime.toMillis() * 0.001;
+            /*timestamp = Instant.now();
+            double deltaTime = (double) runtime.toNanos() * 0.00_000_000_1;
+            //System.out.println(deltaTime);
+
+            // Physics O_O
+            angularVelocity -= ANGULAR_TORQUE * deltaTime;
+            if (angularVelocity < 0.0) {
+                angularVelocity = 0.0;
+            }
+            angle += angularVelocity * deltaTime;*/
+                            double currentVelocity = wf.angularVelocity - time * ANGULAR_TORQUE;
+                            wf.angle = currentVelocity > 0.0 ? time * (wf.angularVelocity - time * ANGULAR_TORQUE * 0.5) : wf.finalAngle;
+                            wf.validateClick();
+                            wf.rotated = wf.rotateImageByDegrees(wf.master, wf.angle);
+                            wf.repaint();
+                        });
+                        wf.ticker.start();
+                    }
+                });
                 panel.add(zakrecButton, BorderLayout.SOUTH);
                 frame.pack();
                 frame.setLocationRelativeTo(null);
@@ -119,52 +165,14 @@ public class WheelOfFortune extends JPanel {
     public WheelOfFortune(File file) {
         audio = new AudioManager();
         this.add(audio);
-        Random random = new Random();
-        finalAngleClamped = random.nextDouble(2 * Math.PI);
-        finalAngle = finalAngleClamped + 2*Math.PI*rotations;
 
-        angularVelocity = Math.sqrt(2*ANGULAR_TORQUE*finalAngle);
 
         students = Utils.wczytajPlik(file);
         totalStudentWeight = WheelGenerator.calculateTotalWeight(students);
         master = WheelGenerator.generate(RADIUS, students);
         rotated = rotateImageByDegrees(master, 0.0);
 
-        // Check who is the winner
-        double weightRange = finalAngleClamped/(2*Math.PI) * totalStudentWeight;
-        double weightSum = 0.0;
-        for (Student student : students) {
-            weightSum +=student.weight;
-            if (weightSum > weightRange) {
-                winner = student;
-                break;
-            }
-        }
-        System.out.println(winner.fullName);
 
-        //Ticker ticker = new Ticker();
-        ticker.setCallback(someTicker -> {
-            if (timestamp == null) {
-                timestamp = Instant.now();
-            }
-            Duration runtime = Duration.between(timestamp, Instant.now());
-            double time = runtime.toMillis() * 0.001;
-            /*timestamp = Instant.now();
-            double deltaTime = (double) runtime.toNanos() * 0.00_000_000_1;
-            //System.out.println(deltaTime);
-
-            // Physics O_O
-            angularVelocity -= ANGULAR_TORQUE * deltaTime;
-            if (angularVelocity < 0.0) {
-                angularVelocity = 0.0;
-            }
-            angle += angularVelocity * deltaTime;*/
-            double currentVelocity = angularVelocity - time * ANGULAR_TORQUE;
-            angle = currentVelocity > 0.0 ? time * (angularVelocity - time * ANGULAR_TORQUE * 0.5) : finalAngle;
-            validateClick();
-            rotated = rotateImageByDegrees(master, angle);
-            repaint();
-        });
         //ticker.start();
     }
 
@@ -197,7 +205,6 @@ public class WheelOfFortune extends JPanel {
 
             g2d.drawImage(rotated, x, y, this);
             try {
-                // Wczytywanie obrazu z pliku
                 BufferedImage image = ImageIO.read(new File("resources/triangle.png"));
                 g2d.drawImage(image, getWidth()-image.getWidth(), (getHeight()-image.getHeight())/2, this);
 
