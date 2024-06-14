@@ -6,10 +6,12 @@ import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Random;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class WheelOfFortune extends JPanel {
@@ -194,7 +196,14 @@ public class WheelOfFortune extends JPanel {
             int y = (getHeight() - rotated.getHeight()) / 2;
 
             g2d.drawImage(rotated, x, y, this);
+            try {
+                // Wczytywanie obrazu z pliku
+                BufferedImage image = ImageIO.read(new File("resources/triangle.png"));
+                g2d.drawImage(image, getWidth()-image.getWidth(), (getHeight()-image.getHeight())/2, this);
 
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             g2d.dispose();
         }
     }
