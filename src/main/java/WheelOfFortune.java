@@ -26,7 +26,7 @@ public class WheelOfFortune extends JPanel {
     private static final double ANGULAR_TORQUE= 0.3;
     private double angle = 0;
     private final int rotations = 7;
-    private double finalAngle;
+    private double finalAngle = 1.0;
     private double finalAngleClamped;
     private double angularVelocity = 1.0;
     private double currentVelocity = 1.0;
@@ -247,7 +247,7 @@ public class WheelOfFortune extends JPanel {
 
         //int x = w / 2;
         //int y = h / 2;
-        double scalar = 1 - currentVelocity/angularVelocity;
+        double scalar = angle/finalAngle;
         double totalScalingFactor = SCALING_FACTOR * (1 + scalar);
 
         at.translate(-RADIUS*scalar + 50, 0);
