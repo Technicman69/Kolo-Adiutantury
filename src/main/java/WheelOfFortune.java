@@ -161,7 +161,7 @@ public class WheelOfFortune extends JPanel {
                                 wf.currentVelocity = 0.0;
                                 wf.ticker.stop();
                                 wf.audio.playSound("fanfare.wav");
-                                JOptionPane.showMessageDialog(wf, "Zwycięzcą zostaje:\n"+wf.winner.fullName + "!\nTwoje \"v\" proszania się w stronę egzaminu dąży do 0, bo właśnie Cię z niego zwolniono!", "Wybrano zwycięzcę", JOptionPane.INFORMATION_MESSAGE);
+                                JOptionPane.showMessageDialog(wf, "Zwycięzcą zostaje:\n"+wf.winner.fullName + "!\nTwoje \"v\" poruszania się w stronę egzaminu dąży do 0, bo właśnie Cię z niego zwolniono!", "Wybrano zwycięzcę", JOptionPane.INFORMATION_MESSAGE);
 
                             }
                             wf.validateClick();
