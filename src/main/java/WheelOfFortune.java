@@ -157,8 +157,11 @@ public class WheelOfFortune extends JPanel {
                             angle += angularVelocity * deltaTime;*/
                             wf.currentVelocity = wf.angularVelocity - time * ANGULAR_TORQUE;
                             wf.angle = wf.currentVelocity > 0.0 ? time * (wf.angularVelocity - time * ANGULAR_TORQUE * 0.5) : wf.finalAngle;
-                            if (wf.currentVelocity < 0.0) {
+                            if (wf.currentVelocity <= 0.0) {
                                 wf.currentVelocity = 0.0;
+                                wf.ticker.stop();
+                                JOptionPane.showMessageDialog(wf, "Zwycięzcą zostaje: "+wf.winner.fullName, "Wybrano zwycięzcę", JOptionPane.INFORMATION_MESSAGE);
+
                             }
                             wf.validateClick();
                             wf.rotated = wf.rotateImageByDegrees(wf.master, wf.angle);
