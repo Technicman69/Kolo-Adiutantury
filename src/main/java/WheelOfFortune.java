@@ -92,7 +92,7 @@ public class WheelOfFortune extends JPanel {
         }
         System.out.println("Current dir is " + Paths.get("").toAbsolutePath().toString());
 
-        JFrame frame = new JFrame("Testing");
+        JFrame frame = new JFrame("Koło adiutantury");
         boolean flag = true;
         File selectedFile = new File("resources/studenci.txt");
         while (flag) {

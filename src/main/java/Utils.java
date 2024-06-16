@@ -32,11 +32,15 @@ public class Utils {
             while(odczyt.hasNextLine()) {
                 String line = odczyt.nextLine();
                 String[] nazwy = line.split(" ");
-                String fullname = (nazwy[0] + " " + nazwy[1]);
-                double weight = Double.parseDouble(nazwy[2]);
+                StringBuilder fullname = new StringBuilder(nazwy[0]);
+                for (int j = 1; j < nazwy.length-1; j++)
+                {
+                    fullname.append(" "+nazwy[j]);
+                }
+                double weight = Double.parseDouble(nazwy[nazwy.length-1]);
                 Color color = colors[i%colors.length];
                 i++;
-                Lista.add(new Student(fullname, weight, color));
+                Lista.add(new Student(fullname.toString(), weight, color));
             }
             return Lista;
         }
