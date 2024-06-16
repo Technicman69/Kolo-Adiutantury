@@ -63,7 +63,7 @@ public class WheelGenerator {
             arc.setAngleExtent(Math.toDegrees(angle));
             g2d.setColor(student.color);
             g2d.fill(arc);
-            g2d.setColor(Color.black);
+            g2d.setColor(Color.white);
             g2d.drawString(text, 2*radius - metrics.stringWidth(text), radius + metrics.getHeight()/4);
 
             totalAngle += angle;

@@ -1,6 +1,7 @@
 package main.java;
 import java.awt.*;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.FileNotFoundException;
@@ -10,18 +11,32 @@ public class Utils {
     {
         try {
             int i = 0;
-            Color colors[] = {Color.GREEN, Color.YELLOW, Color.BLUE, Color.RED};
-            Scanner odczyt = new Scanner(file);
+//            Color[] colors = {
+//                    new Color(0x7AF5C6),
+//                    new Color(0xF5EB98),
+//                    new Color(0xAD98F5),
+//                    new Color(0xF5A798),
+//                    new Color(0x8E89A1),
+//                    new Color(0x687872),
+//            };
+            Color[] colors = {
+                    new Color(0x25F591),
+                    new Color(0xF5D507),
+                    new Color(0x816EF5),
+                    new Color(0xF5412A),
+                    new Color(0x2387F1),
+                    new Color(0x228053),
+            };
+            Scanner odczyt = new Scanner(file, StandardCharsets.UTF_8);
             ArrayList<Student> Lista = new ArrayList<>();
             while(odczyt.hasNextLine()) {
                 String line = odczyt.nextLine();
                 String[] nazwy = line.split(" ");
                 String fullname = (nazwy[0] + " " + nazwy[1]);
                 double weight = Double.parseDouble(nazwy[2]);
-                Color color = colors[i%4];
+                Color color = colors[i%colors.length];
                 i++;
                 Lista.add(new Student(fullname, weight, color));
-
             }
             return Lista;
         }

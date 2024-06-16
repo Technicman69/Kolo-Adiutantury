@@ -7,23 +7,19 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 
 public class AudioManager extends Component {
     public void playSound(String fileName) {
         try {
             // Open an audio input stream.
-            File f = new File("resources/" + fileName).getAbsoluteFile();
-            AudioInputStream audioIn = AudioSystem.getAudioInputStream(f);
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(Objects.requireNonNull(getClass().getResource("/" + fileName)));
             // Get a sound clip resource.
             Clip clip = AudioSystem.getClip();
             // Open audio clip and load samples from the audio input stream.
             clip.open(audioIn);
             clip.start();
-        } catch (UnsupportedAudioFileException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (LineUnavailableException e) {
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
     }

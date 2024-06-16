@@ -7,35 +7,43 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 
 public class WheelOfFortune extends JPanel {
 
     private static final int MIN_DELAY = 5;
     private static final int RADIUS = 350;
+    private static final double SCALING_FACTOR = 1;
     private static final double ANGULAR_TORQUE= 0.3;
     private double angle = 0;
     private final int rotations = 7;
     private double finalAngle;
     private double finalAngleClamped;
-    private double angularVelocity;
+    private double angularVelocity = 1.0;
+    private double currentVelocity = 1.0;
     private Student winner;
     private Ticker ticker;
     private final BufferedImage master;
     private BufferedImage rotated;
+    private Image triangle;
+    private Image background;
 
     private AudioManager audio;
 
     private ArrayList<Student> students;
     private double totalStudentWeight;
 
-    public double nextClickAngle = 0.0;
-    public int nextClickIndex = -1;
+    public double nextClickAngle;
+    public int nextClickIndex;
 
     public static class Ticker {
 
@@ -82,37 +90,43 @@ public class WheelOfFortune extends JPanel {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             throw new RuntimeException("Błąd przy wczytywaniu systemowych stylów: ", ex);
         }
+        System.out.println("Current dir is " + Paths.get("").toAbsolutePath().toString());
 
         JFrame frame = new JFrame("Testing");
         boolean flag = true;
         File selectedFile = new File("resources/studenci.txt");
         while (flag) {
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+            fileChooser.setCurrentDirectory(FileSystemView.getFileSystemView().getHomeDirectory().getAbsoluteFile());
             int result = fileChooser.showOpenDialog(frame);
 
             if (result == JFileChooser.APPROVE_OPTION) {
                 selectedFile = fileChooser.getSelectedFile();
                 System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 var panel = new JPanel();
                 panel.setLayout(new BorderLayout());
                 WheelOfFortune wf = new WheelOfFortune(selectedFile);
-                frame.setLayout(new GridLayout(1, 2));
+//                frame.setLayout(new GridLayout(1, 2));
                 panel.add(wf);
                 frame.add(panel);
 
-                frame.add(new JTextArea("<---"));
                 JButton zakrecButton = new JButton("Zakręć kołem");
                 zakrecButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         Random random = new Random();
-                        wf.finalAngleClamped = random.nextDouble(2 * Math.PI);
+                        wf.angle = 0;
+                        wf.finalAngleClamped = random.nextDouble() * 2 * Math.PI;
                         wf.finalAngle = wf.finalAngleClamped + 2*Math.PI*wf.rotations;
 
                         wf.angularVelocity = Math.sqrt(2*ANGULAR_TORQUE*wf.finalAngle);
+                        wf.currentVelocity = wf.angularVelocity;
                         wf.ticker = new Ticker();
+
+                        wf.nextClickAngle = 0.0;
+                        wf.nextClickIndex = -1;
                         // Check who is the winner
                         double weightRange = wf.finalAngleClamped/(2*Math.PI) * wf.totalStudentWeight;
                         double weightSum = 0.0;
@@ -126,27 +140,28 @@ public class WheelOfFortune extends JPanel {
                         //System.out.println(wf.winner.fullName);
 
                         //Ticker ticker = new Ticker();
+                        wf.timestamp = Instant.now();
                         wf.ticker.setCallback(someTicker -> {
-                            if (wf.timestamp == null) {
-                                wf.timestamp = Instant.now();
-                            }
+                            wf.repaint();
                             Duration runtime = Duration.between(wf.timestamp, Instant.now());
                             double time = runtime.toMillis() * 0.001;
-            /*timestamp = Instant.now();
-            double deltaTime = (double) runtime.toNanos() * 0.00_000_000_1;
-            //System.out.println(deltaTime);
+                            /*timestamp = Instant.now();
+                            double deltaTime = (double) runtime.toNanos() * 0.00_000_000_1;
+                            //System.out.println(deltaTime);
 
-            // Physics O_O
-            angularVelocity -= ANGULAR_TORQUE * deltaTime;
-            if (angularVelocity < 0.0) {
-                angularVelocity = 0.0;
-            }
-            angle += angularVelocity * deltaTime;*/
-                            double currentVelocity = wf.angularVelocity - time * ANGULAR_TORQUE;
-                            wf.angle = currentVelocity > 0.0 ? time * (wf.angularVelocity - time * ANGULAR_TORQUE * 0.5) : wf.finalAngle;
+                            // Physics O_O
+                            angularVelocity -= ANGULAR_TORQUE * deltaTime;
+                            if (angularVelocity < 0.0) {
+                                angularVelocity = 0.0;
+                            }
+                            angle += angularVelocity * deltaTime;*/
+                            wf.currentVelocity = wf.angularVelocity - time * ANGULAR_TORQUE;
+                            wf.angle = wf.currentVelocity > 0.0 ? time * (wf.angularVelocity - time * ANGULAR_TORQUE * 0.5) : wf.finalAngle;
+                            if (wf.currentVelocity < 0.0) {
+                                wf.currentVelocity = 0.0;
+                            }
                             wf.validateClick();
                             wf.rotated = wf.rotateImageByDegrees(wf.master, wf.angle);
-                            wf.repaint();
                         });
                         wf.ticker.start();
                     }
@@ -154,6 +169,7 @@ public class WheelOfFortune extends JPanel {
                 panel.add(zakrecButton, BorderLayout.SOUTH);
                 frame.pack();
                 frame.setLocationRelativeTo(null);
+                frame.setResizable(false);
                 frame.setVisible(true);
 
                 flag = false;
@@ -169,9 +185,10 @@ public class WheelOfFortune extends JPanel {
 
         students = Utils.wczytajPlik(file);
         totalStudentWeight = WheelGenerator.calculateTotalWeight(students);
-        master = WheelGenerator.generate(RADIUS, students);
+        master = WheelGenerator.generate((int) (RADIUS/SCALING_FACTOR), students);
         rotated = rotateImageByDegrees(master, 0.0);
-
+        triangle = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/triangle.png"));
+        background = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/background.png"));
 
         //ticker.start();
     }
@@ -191,7 +208,7 @@ public class WheelOfFortune extends JPanel {
     public Dimension getPreferredSize() {
         return master == null
                 ? new Dimension(200, 200)
-                : new Dimension(master.getWidth(), master.getHeight());
+                : new Dimension(2*RADIUS+100, 2*RADIUS);
     }
 
     @Override
@@ -203,14 +220,11 @@ public class WheelOfFortune extends JPanel {
             int x = (getWidth() - rotated.getWidth()) / 2;
             int y = (getHeight() - rotated.getHeight()) / 2;
 
+            g2d.drawImage(background, (getWidth()-background.getWidth(null))/2, (getHeight()-background.getHeight(null))/2, this);
             g2d.drawImage(rotated, x, y, this);
-            try {
-                BufferedImage image = ImageIO.read(new File("resources/triangle.png"));
-                g2d.drawImage(image, getWidth()-image.getWidth(), (getHeight()-image.getHeight())/2, this);
+            //System.out.println("INPUT FILE:" + Toolkit.getDefaultToolkit().getImage(getClass().getResource("/triangle.png")).toString());
+            g2d.drawImage(triangle, getWidth()-triangle.getWidth(null), (getHeight()-triangle.getHeight(null))/2, this);
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             g2d.dispose();
         }
     }
@@ -218,21 +232,26 @@ public class WheelOfFortune extends JPanel {
     public BufferedImage rotateImageByDegrees(BufferedImage img, double angle) {
 
         double sin = Math.abs(Math.sin(angle)), cos = Math.abs(Math.cos(angle));
-        int w = img.getWidth();
-        int h = img.getHeight();
-        int newWidth = (int) Math.floor(w * cos + h * sin);
-        int newHeight = (int) Math.floor(h * cos + w * sin);
+        //int w = img.getWidth();
+        //int newWidth = (int) Math.floor(w * cos + h * sin);
+        //int newHeight = (int) Math.floor(h * cos + w * sin);
 
-        BufferedImage rotated = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage rotated = new BufferedImage(2*RADIUS+100, 2*RADIUS, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = rotated.createGraphics();
         WheelGenerator.antialiasing(g2d);
         AffineTransform at = new AffineTransform();
-        at.translate((double) (newWidth - w) / 2, (double) (newHeight - h) / 2);
+        //at.translate(newWidth - w, newHeight - h);
 
-        int x = w / 2;
-        int y = h / 2;
+        //int x = w / 2;
+        //int y = h / 2;
+        double scalar = 1 - currentVelocity/angularVelocity;
+        double totalScalingFactor = SCALING_FACTOR * (1 + scalar);
 
-        at.rotate(angle, x, y);
+        at.translate(-RADIUS*scalar + 50, 0);
+        at.rotate(angle, RADIUS, RADIUS);
+
+        at.translate(-RADIUS*scalar, -RADIUS*scalar);
+        at.scale(totalScalingFactor, totalScalingFactor);
         g2d.setTransform(at);
         g2d.drawImage(img, 0, 0, this);
         g2d.dispose();
