@@ -22,7 +22,7 @@ public class WheelOfFortune extends JPanel {
 
     private static final int MIN_DELAY = 5;
     private static final int RADIUS = 350;
-    private static final double SCALING_FACTOR = 1;
+    private static final double SCALING_FACTOR = 0.75;
     private static final double ANGULAR_TORQUE= 0.2137;
     private double angle = 0;
     private final int rotations = 4;
