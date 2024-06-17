@@ -23,9 +23,9 @@ public class WheelOfFortune extends JPanel {
     private static final int MIN_DELAY = 5;
     private static final int RADIUS = 350;
     private static final double SCALING_FACTOR = 1;
-    private static final double ANGULAR_TORQUE= 0.3;
+    private static final double ANGULAR_TORQUE= 0.2137;
     private double angle = 0;
-    private final int rotations = 7;
+    private final int rotations = 4;
     private double finalAngle = 1.0;
     private double finalAngleClamped;
     private double angularVelocity = 1.0;
@@ -44,6 +44,10 @@ public class WheelOfFortune extends JPanel {
 
     public double nextClickAngle;
     public int nextClickIndex;
+
+    private Instant timestamp;
+    private Instant timeSinceClick;
+    private double minMillisBetweenClick = 69.0;
 
     public static class Ticker {
 
@@ -82,7 +86,6 @@ public class WheelOfFortune extends JPanel {
 
     }
 
-    private Instant timestamp;
 
     public static void main(String[] args) {
         try {
@@ -141,6 +144,7 @@ public class WheelOfFortune extends JPanel {
 
                         //Ticker ticker = new Ticker();
                         wf.timestamp = Instant.now();
+                        wf.timeSinceClick = Instant.now();
                         wf.ticker.setCallback(someTicker -> {
                             wf.repaint();
                             Duration runtime = Duration.between(wf.timestamp, Instant.now());
@@ -204,7 +208,11 @@ public class WheelOfFortune extends JPanel {
                 nextClickIndex = 0;
             }
             nextClickAngle += students.get(nextClickIndex).angleInRadians(totalStudentWeight);
-            audio.playSound("click.wav");
+            double timeDelta = Duration.between(timeSinceClick, Instant.now()).toMillis();
+            if (timeDelta > minMillisBetweenClick) {
+                audio.playSound("click.wav");
+                timeSinceClick = Instant.now();
+            }
         }
     }
 
