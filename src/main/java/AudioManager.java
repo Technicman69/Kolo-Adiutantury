@@ -1,12 +1,8 @@
 package main.java;
 
-import javax.print.attribute.standard.Media;
 import javax.sound.sampled.*;
-import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Objects;
 
 public class AudioManager extends Component {

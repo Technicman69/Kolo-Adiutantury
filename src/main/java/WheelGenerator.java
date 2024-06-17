@@ -5,7 +5,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.geom.Arc2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class WheelGenerator {
 

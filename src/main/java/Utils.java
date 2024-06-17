@@ -4,7 +4,6 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.io.FileNotFoundException;
 
 public class Utils {
     public static ArrayList<Student> wczytajPlik(File file)
@@ -35,7 +34,7 @@ public class Utils {
                 StringBuilder fullname = new StringBuilder(nazwy[0]);
                 for (int j = 1; j < nazwy.length-1; j++)
                 {
-                    fullname.append(" "+nazwy[j]);
+                    fullname.append(" ").append(nazwy[j]);
                 }
                 double weight = Double.parseDouble(nazwy[nazwy.length-1]);
                 Color color = colors[i%colors.length];
@@ -47,7 +46,7 @@ public class Utils {
         catch (Exception e)
         {
             System.out.println("error");
-            return new ArrayList<Student>();
+            return new ArrayList<>();
         }
 
     }

@@ -1,20 +1,13 @@
 package main.java;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Random;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 
@@ -34,25 +27,25 @@ public class WheelOfFortune extends JPanel {
     private Ticker ticker;
     private final BufferedImage master;
     private BufferedImage rotated;
-    private Image triangle;
-    private Image background;
+    private final Image triangle;
+    private final Image background;
 
-    private AudioManager audio;
+    private final AudioManager audio;
 
-    private ArrayList<Student> students;
-    private double totalStudentWeight;
+    private final ArrayList<Student> students;
+    private final double totalStudentWeight;
 
     public double nextClickAngle;
     public int nextClickIndex;
 
     private Instant timestamp;
     private Instant timeSinceClick;
-    private double minMillisBetweenClick = 69.0;
+    private final double minMillisBetweenClick = 69.0;
 
     public static class Ticker {
 
         public interface Callback {
-            public void didTick(Ticker ticker);
+            void didTick(Ticker ticker);
         }
 
         private Timer timer;
@@ -93,11 +86,11 @@ public class WheelOfFortune extends JPanel {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             throw new RuntimeException("Błąd przy wczytywaniu systemowych stylów: ", ex);
         }
-        System.out.println("Current dir is " + Paths.get("").toAbsolutePath().toString());
+        //System.out.println("Current dir is " + Paths.get("").toAbsolutePath());
 
         JFrame frame = new JFrame("Koło adiutantury");
         boolean flag = true;
-        File selectedFile = new File("resources/studenci.txt");
+        File selectedFile;// = new File("resources/studenci2.txt");
         while (flag) {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setCurrentDirectory(FileSystemView.getFileSystemView().getHomeDirectory().getAbsoluteFile());
@@ -116,63 +109,60 @@ public class WheelOfFortune extends JPanel {
                 frame.add(panel);
 
                 JButton zakrecButton = new JButton("Zakręć kołem");
-                zakrecButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        Random random = new Random();
-                        wf.angle = 0;
-                        wf.finalAngleClamped = random.nextDouble() * 2 * Math.PI;
-                        wf.finalAngle = wf.finalAngleClamped + 2*Math.PI*wf.rotations;
+                zakrecButton.addActionListener(e -> {
+                    Random random = new Random();
+                    wf.angle = 0;
+                    wf.finalAngleClamped = random.nextDouble() * 2 * Math.PI;
+                    wf.finalAngle = wf.finalAngleClamped + 2*Math.PI*wf.rotations;
 
-                        wf.angularVelocity = Math.sqrt(2*ANGULAR_TORQUE*wf.finalAngle);
-                        wf.currentVelocity = wf.angularVelocity;
-                        wf.ticker = new Ticker();
+                    wf.angularVelocity = Math.sqrt(2*ANGULAR_TORQUE*wf.finalAngle);
+                    wf.currentVelocity = wf.angularVelocity;
+                    wf.ticker = new Ticker();
 
-                        wf.nextClickAngle = 0.0;
-                        wf.nextClickIndex = -1;
-                        // Check who is the winner
-                        double weightRange = wf.finalAngleClamped/(2*Math.PI) * wf.totalStudentWeight;
-                        double weightSum = 0.0;
-                        for (Student student : wf.students) {
-                            weightSum +=student.weight;
-                            if (weightSum > weightRange) {
-                                wf.winner = student;
-                                break;
-                            }
+                    wf.nextClickAngle = 0.0;
+                    wf.nextClickIndex = -1;
+                    // Check who is the winner
+                    double weightRange = wf.finalAngleClamped/(2*Math.PI) * wf.totalStudentWeight;
+                    double weightSum = 0.0;
+                    for (Student student : wf.students) {
+                        weightSum +=student.weight;
+                        if (weightSum > weightRange) {
+                            wf.winner = student;
+                            break;
                         }
-                        //System.out.println(wf.winner.fullName);
-
-                        //Ticker ticker = new Ticker();
-                        wf.timestamp = Instant.now();
-                        wf.timeSinceClick = Instant.now();
-                        wf.ticker.setCallback(someTicker -> {
-                            wf.repaint();
-                            Duration runtime = Duration.between(wf.timestamp, Instant.now());
-                            double time = runtime.toMillis() * 0.001;
-                            /*timestamp = Instant.now();
-                            double deltaTime = (double) runtime.toNanos() * 0.00_000_000_1;
-                            //System.out.println(deltaTime);
-
-                            // Physics O_O
-                            angularVelocity -= ANGULAR_TORQUE * deltaTime;
-                            if (angularVelocity < 0.0) {
-                                angularVelocity = 0.0;
-                            }
-                            angle += angularVelocity * deltaTime;*/
-                            wf.currentVelocity = wf.angularVelocity - time * ANGULAR_TORQUE;
-                            wf.angle = wf.currentVelocity > 0.0 ? time * (wf.angularVelocity - time * ANGULAR_TORQUE * 0.5) : wf.finalAngle;
-                            if (wf.currentVelocity <= 0.0) {
-                                wf.currentVelocity = 0.0;
-                                wf.ticker.stop();
-                                wf.audio.playSound("fanfare.wav");
-                                JOptionPane.showMessageDialog(wf, "Zwycięzcą zostaje:\n"+wf.winner.fullName + "!\nTwoje \"v\" poruszania się w stronę egzaminu dąży do 0, bo właśnie Cię z niego zwolniono!", "Wybrano zwycięzcę", JOptionPane.INFORMATION_MESSAGE);
-
-                            }
-                            wf.validateClick();
-                            wf.rotated = wf.rotateImageByDegrees(wf.master, wf.angle);
-                        });
-                        wf.ticker.start();
                     }
+                    //System.out.println(wf.winner.fullName);
+
+                    //Ticker ticker = new Ticker();
+                    wf.timestamp = Instant.now();
+                    wf.timeSinceClick = Instant.now();
+                    wf.ticker.setCallback(someTicker -> {
+                        wf.repaint();
+                        Duration runtime = Duration.between(wf.timestamp, Instant.now());
+                        double time = runtime.toMillis() * 0.001;
+                        /*timestamp = Instant.now();
+                        double deltaTime = (double) runtime.toNanos() * 0.00_000_000_1;
+                        //System.out.println(deltaTime);
+
+                        // Physics O_O
+                        angularVelocity -= ANGULAR_TORQUE * deltaTime;
+                        if (angularVelocity < 0.0) {
+                            angularVelocity = 0.0;
+                        }
+                        angle += angularVelocity * deltaTime;*/
+                        wf.currentVelocity = wf.angularVelocity - time * ANGULAR_TORQUE;
+                        wf.angle = wf.currentVelocity > 0.0 ? time * (wf.angularVelocity - time * ANGULAR_TORQUE * 0.5) : wf.finalAngle;
+                        if (wf.currentVelocity <= 0.0) {
+                            wf.currentVelocity = 0.0;
+                            wf.ticker.stop();
+                            wf.audio.playSound("fanfare.wav");
+                            JOptionPane.showMessageDialog(wf, "Zwycięzcą zostaje:\n"+wf.winner.fullName + "!\nTwoje \"v\" poruszania się w stronę egzaminu dąży do 0, bo właśnie Cię z niego zwolniono!", "Wybrano zwycięzcę", JOptionPane.INFORMATION_MESSAGE);
+
+                        }
+                        wf.validateClick();
+                        wf.rotated = wf.rotateImageByDegrees(wf.master, wf.angle);
+                    });
+                    wf.ticker.start();
                 });
                 panel.add(zakrecButton, BorderLayout.SOUTH);
                 frame.pack();
@@ -243,7 +233,7 @@ public class WheelOfFortune extends JPanel {
 
     public BufferedImage rotateImageByDegrees(BufferedImage img, double angle) {
 
-        double sin = Math.abs(Math.sin(angle)), cos = Math.abs(Math.cos(angle));
+        //double sin = Math.abs(Math.sin(angle)), cos = Math.abs(Math.cos(angle));
         //int w = img.getWidth();
         //int newWidth = (int) Math.floor(w * cos + h * sin);
         //int newHeight = (int) Math.floor(h * cos + w * sin);
