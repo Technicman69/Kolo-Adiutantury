@@ -30,7 +30,7 @@ public class Utils {
             ArrayList<Student> Lista = new ArrayList<>();
             while(odczyt.hasNextLine()) {
                 String line = odczyt.nextLine();
-                String[] nazwy = line.split(" ");
+                String[] nazwy = line.split(",");
                 StringBuilder fullname = new StringBuilder(nazwy[0]);
                 for (int j = 1; j < nazwy.length-1; j++)
                 {
